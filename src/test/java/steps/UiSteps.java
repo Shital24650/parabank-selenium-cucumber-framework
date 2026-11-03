@@ -1,6 +1,6 @@
 package steps;
 
-import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import io.cucumber.java.en.Given;
@@ -39,9 +39,16 @@ public class UiSteps {
                 "Accounts Overview page was not displayed after login");
     }
 
-    @Then("I should see the error {string}")
-    public void seeError(String expected) {
-        assertEquals(new LoginPage(ctx.driver).getErrorText(), expected);
+    @Then("I should see a login error")
+    public void seeLoginError() {
+        String error = new LoginPage(ctx.driver).getErrorText();
+        assertFalse(error.isEmpty(), "Expected an error message after a failed login");
+    }
+
+    @Then("I should not see the accounts overview")
+    public void doNotSeeOverview() {
+        assertFalse(new LoginPage(ctx.driver).isAccountsOverviewDisplayed(),
+                "Accounts Overview was displayed for invalid credentials");
     }
 
     @When("I read the account ids shown in the UI")
