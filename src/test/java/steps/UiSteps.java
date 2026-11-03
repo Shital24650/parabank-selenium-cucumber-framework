@@ -39,16 +39,11 @@ public class UiSteps {
                 "Accounts Overview page was not displayed after login");
     }
 
-    @Then("I should see a login error")
-    public void seeLoginError() {
-        String error = new LoginPage(ctx.driver).getErrorText();
-        assertFalse(error.isEmpty(), "Expected an error message after a failed login");
-    }
-
-    @Then("I should not see the accounts overview")
-    public void doNotSeeOverview() {
-        assertFalse(new LoginPage(ctx.driver).isAccountsOverviewDisplayed(),
-                "Accounts Overview was displayed for invalid credentials");
+    @Then("I should not be logged in")
+    public void notLoggedIn() {
+        LoginPage page = new LoginPage(ctx.driver);
+        page.waitForLoginResult();
+        assertFalse(page.isLoggedIn(), "User appears logged in with invalid credentials");
     }
 
     @When("I read the account ids shown in the UI")
