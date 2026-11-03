@@ -10,8 +10,7 @@ Feature: ParaBank login and accounts
   Scenario: Invalid credentials are rejected
     Given I open the ParaBank home page
     When I log in with username "wrong" and password "wrong"
-    Then I should see a login error
-    And I should not see the accounts overview
+    Then I should not be logged in
   @api
   Scenario: API login returns the customer
     When I log in through the API with the default test user
