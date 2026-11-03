@@ -17,7 +17,7 @@ public class LoginPage {
     private static final By PASSWORD = By.name("password");
     private static final By LOGIN_BUTTON = By.xpath("//input[@value='Log In']");
     private static final By OVERVIEW_HEADING = By.xpath("//h1[normalize-space()='Accounts Overview']");
-    private static final By ERROR = By.cssSelector("p.error");
+    private static final By LOGOUT_LINK = By.linkText("Log Out");
 
     public LoginPage(WebDriver driver) {
         this.driver = driver;
@@ -43,7 +43,13 @@ public class LoginPage {
         }
     }
 
-    public String getErrorText() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(ERROR)).getText().trim();
+    // The login form posts away from index.htm whether the login works or not.
+    public void waitForLoginResult() {
+        wait.until(ExpectedConditions.not(ExpectedConditions.urlContains("index.htm")));
+    }
+
+    public boolean isLoggedIn() {
+        return !driver.findElements(LOGOUT_LINK).isEmpty()
+                || !driver.findElements(OVERVIEW_HEADING).isEmpty();
     }
 }
