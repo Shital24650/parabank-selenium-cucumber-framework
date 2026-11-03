@@ -6,7 +6,12 @@ Feature: ParaBank login and accounts
     When I log in with the default test user
     Then I should see the accounts overview
 
-  
+  @ui
+  Scenario: Invalid credentials are rejected
+    Given I open the ParaBank home page
+    When I log in with username "no-such-user-x9q7z4k2" and password "bad-pass-x9q7z4k2"
+    Then I should not be logged in
+
   @api
   Scenario: API login returns the customer
     When I log in through the API with the default test user
