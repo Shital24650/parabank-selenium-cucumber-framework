@@ -30,7 +30,8 @@ public class ApiSteps {
 
     @Then("the API response status should be {int}")
     public void statusIs(int expected) {
-        assertEquals(ctx.apiResponse.statusCode(), expected);
+        assertEquals(ctx.apiResponse.statusCode(), expected,
+                "Unexpected status. Response body: " + ctx.apiResponse.asString());
     }
 
     @Then("the API should return a customer id")
@@ -41,7 +42,9 @@ public class ApiSteps {
     @When("I fetch the accounts through the API")
     public void fetchAccounts() {
         ctx.apiResponse = ApiClient.accounts(ctx.customerId);
-        assertEquals(ctx.apiResponse.statusCode(), 200);
+        assertEquals(ctx.apiResponse.statusCode(), 200,
+                "Accounts call failed. Customer id " + ctx.customerId
+                        + ". Response body: " + ctx.apiResponse.asString());
         List<Integer> ids = ctx.apiResponse.jsonPath().getList("id");
         ctx.apiAccountIds = ids.stream().map(String::valueOf).collect(Collectors.toList());
     }
