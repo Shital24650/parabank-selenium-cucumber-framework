@@ -36,15 +36,14 @@ public class UiSteps {
     @Then("I should see the accounts overview")
     public void seeOverview() {
         assertTrue(new LoginPage(ctx.driver).isAccountsOverviewDisplayed(),
-                "Accounts Overview page was not displayed. Current URL: " + ctx.driver.getCurrentUrl());
+                "Accounts Overview page was not displayed after login");
     }
 
     @Then("I should not be logged in")
     public void notLoggedIn() {
-        new LoginPage(ctx.driver).waitForLoginResult();
-        String url = ctx.driver.getCurrentUrl();
-        assertFalse(url.contains("overview.htm"),
-                "Invalid credentials were accepted. Landed on: " + url);
+        LoginPage page = new LoginPage(ctx.driver);
+        page.waitForLoginResult();
+        assertFalse(page.isLoggedIn(), "User appears logged in with invalid credentials");
     }
 
     @When("I read the account ids shown in the UI")
