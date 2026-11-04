@@ -14,14 +14,16 @@ A BDD test automation framework that tests a banking application through **both 
 
 ## What it tests
 
-| Tag | Scenario | Layer |
-|-----|----------|-------|
-| `@smoke @ui` | Valid user lands on the Accounts Overview page | UI |
-| `@ui` | Invalid credentials are rejected (error shown, no access) | UI |
-| `@api` | REST login returns the customer (status 200, customer id) | API |
-| `@e2e` | Account ids shown in the UI match the ids returned by the API | UI + API |
+| Tag | Scenario | Layer | Status |
+|-----|----------|-------|--------|
+| `@smoke @ui` | Valid user lands on the Accounts Overview page | UI | Passing |
+| `@api` | REST login returns the customer (status 200, customer id) | API | Passing |
+| `@e2e` | Account ids shown in the UI match the ids returned by the API | UI + API | Passing |
+| `@ui @known-issue` | Invalid credentials are rejected | UI | Fails on the public site (see Engineering notes) |
 
 The end-to-end scenario logs in through the API, fetches the customer's accounts, logs in through the browser, reads the accounts table, and compares both sets.
+
+The default run executes the 3 passing scenarios. The known-issue scenario is excluded on purpose.
 
 ---
 
@@ -45,7 +47,9 @@ flowchart LR
 - **Explicit waits only.** `WebDriverWait` with expected conditions. No `Thread.sleep`.
 - **API-only scenarios skip the browser.** A tag-based hook (`not @api`) starts Chrome only when a scenario needs it.
 - **Shared state per scenario.** `TestContext` is injected into step classes with PicoContainer, so scenarios never share data.
-- **Failure screenshots.** A screenshot is attached to the Cucumber report whenever a scenario fails.
+- **Useful failures.** Assertion messages include the current URL or the API response body, so a CI log alone is enough to diagnose a failure.
+- **Failure screenshots.** A screenshot is attached to the Cucumber report whenever a UI scenario fails.
+- **Tag-based runs.** Scenarios are tagged by layer and purpose, and the runner excludes `@known-issue` by default.
 - **Config overrides.** Values in `config.properties` can be overridden from the command line.
 
 ---
@@ -89,7 +93,7 @@ Java 17 · Selenium WebDriver · Cucumber (BDD) · TestNG · RestAssured · Mave
 **Prerequisites:** JDK 17, Maven, Google Chrome.
 
 ```bash
-# Run everything (headless)
+# Run the default suite (headless)
 mvn test
 
 # Watch the browser
@@ -98,6 +102,9 @@ mvn test -Dheadless=false
 # Run one layer by tag
 mvn test -Dcucumber.filter.tags="@api"
 mvn test -Dcucumber.filter.tags="@smoke"
+
+# Run the known-issue scenario (fails on the public site)
+mvn test -Dcucumber.filter.tags="@known-issue"
 
 # Point at another environment or user
 mvn test -DbaseUrl=https://your-host/parabank -Dusername=john -Dpassword=demo
@@ -120,24 +127,25 @@ It runs on every push and pull request, and can be started manually from the **A
 
 ## Sample report
 
-![Cucumber report](docs/report.png)
+![Cucumber report](report.png)
 
 ---
 
 ## Engineering notes
 
-- **Invalid-login assertion.** The first version asserted ParaBank's exact error text. The public instance returns a generic internal-error message for bad credentials, so the test failed in CI. It now asserts the behaviour that matters: an error is shown and the Accounts Overview is not reachable. Tests should verify behaviour, not copy wording from an environment I don't control.
+- **Known issue found.** The public ParaBank instance accepted invalid credentials and landed on the Accounts Overview page, so the "invalid credentials are rejected" scenario fails against it. The scenario is tagged `@known-issue` and excluded from the default run, so CI reflects what can be verified. I found this by adding the landing URL to the assertion message and reading the CI logs. Run it with `-Dcucumber.filter.tags="@known-issue"`.
 - **Asynchronous table.** The accounts table is filled by a background request after login, so `AccountsPage` waits for the first account link instead of reading the table immediately.
-- **Shared public environment.** ParaBank is a public demo, so data and availability can change. A timeout or 5xx means re-run before debugging.
+- **Shared public environment.** ParaBank is a public demo, so data and availability can change. Occasional API errors (for example a 400 from the login endpoint) came from the site and cleared on re-run. A timeout or 5xx means re-run before debugging.
 
 ---
 
 ## Roadmap
 
+- [ ] Run against a local ParaBank instance (Docker) so results don't depend on the shared public site
+- [ ] Register a fresh customer per run instead of using the shared `john` account
 - [ ] More API coverage: transfers, bill pay, negative status codes
 - [ ] Parallel execution
 - [ ] AI-assisted failure summaries from the report
-- [ ] Docker image for a one-command local run
 
 ---
 
