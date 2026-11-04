@@ -1,6 +1,7 @@
 function fn() {
+  var root = karate.properties['baseUrl'] || 'https://parabank.parasoft.com/parabank';
   return {
-    baseUrl: 'https://parabank.parasoft.com/parabank/services/bank',
+    baseUrl: root + '/services/bank',
     username: 'john',
     password: 'demo'
   };
