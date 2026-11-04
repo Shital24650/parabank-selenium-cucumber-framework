@@ -2,7 +2,7 @@ Feature: ParaBank REST API (Karate)
 
   Background:
     * url baseUrl
-    * header Accept = 'application/json'
+    * configure headers = { Accept: 'application/json' }
 
   Scenario: Login returns the customer
     Given path 'login', username, password
