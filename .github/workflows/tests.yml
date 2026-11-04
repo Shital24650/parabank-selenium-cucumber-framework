@@ -8,6 +8,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      parabank:
+        image: parasoft/parabank
+        ports:
+          - 8080:8080
+
     steps:
       - uses: actions/checkout@v4
 
@@ -17,8 +24,22 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Wait for ParaBank to start
+        run: |
+          for i in $(seq 1 40); do
+            if curl -sf http://localhost:8080/parabank/index.htm > /dev/null; then
+              echo "ParaBank is up"
+              curl -s -X POST http://localhost:8080/parabank/services/bank/initializeDB > /dev/null || true
+              exit 0
+            fi
+            echo "waiting ($i)"
+            sleep 3
+          done
+          echo "ParaBank did not start"
+          exit 1
+
       - name: Run tests
-        run: mvn -B test
+        run: mvn -B test -DbaseUrl=http://localhost:8080/parabank
 
       - name: Upload reports
         if: always()
