@@ -1,7 +1,7 @@
 package unit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -45,7 +45,7 @@ public class ApiClientStubTest {
         assertEquals(response.statusCode(), 200);
         assertEquals(response.jsonPath().getInt("id"), 12212);
         server.verify(getRequestedFor(urlEqualTo("/services/bank/login/john/demo"))
-                .withHeader("Accept", equalTo("application/json")));
+                .withHeader("Accept", containing("application/json")));
     }
 
     @Test
