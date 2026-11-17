@@ -56,7 +56,7 @@ flowchart LR
 
 ## Tech stack
 
-Java 17 · Selenium WebDriver · Cucumber (BDD) · TestNG · RestAssured · Maven · PicoContainer · GitHub Actions
+Java 17 · Selenium WebDriver · Cucumber (BDD) · TestNG · RestAssured · Karate · Mockito · WireMock · Maven · PicoContainer · GitHub Actions · Jenkins (pipeline definition) · Docker
 
 ---
 
@@ -123,6 +123,29 @@ The workflow in `.github/workflows/tests.yml`:
 
 It runs on every push and pull request, and can be started manually from the **Actions** tab.
 
+### Unit and component tests
+
+`src/test/java/unit` holds tests that need no browser and no network:
+- `ApiResponseParserTest` uses **Mockito** to mock RestAssured responses.
+- `ApiClientStubTest` runs `ApiClient` against a **WireMock** stub of ParaBank, including 400 and 500 responses.
+
+```bash
+mvn test -Dtest="unit.*Test"      # unit and component tests only
+mvn test -Dtest=TestRunner        # Cucumber functional suite only
+```
+
+### Jenkins
+
+`Jenkinsfile` defines the same pipeline for Jenkins: unit tests, functional tests, metrics, and report publishing. It has not been run on a live Jenkins server yet.
+
+### Test metrics and strategy
+
+`scripts/metrics.py` summarises `target/cucumber.json` (pass rate, duration, results per tag) and CI prints it on the run summary. The approach, estimation and risks are in [`docs/TEST_STRATEGY.md`](docs/TEST_STRATEGY.md).
+
+### Local ParaBank
+
+`docker compose up -d`, then `mvn test -DbaseUrl=http://localhost:8080/parabank`.
+
 ---
 
 ## Sample report
@@ -141,7 +164,7 @@ It runs on every push and pull request, and can be started manually from the **A
 
 ## Roadmap
 
-- [ ] Run against a local ParaBank instance (Docker) so results don't depend on the shared public site
+- [x] Run against a local ParaBank instance (Docker) so results don't depend on the shared public site (`docker-compose.yml`)
 - [ ] Register a fresh customer per run instead of using the shared `john` account
 - [ ] More API coverage: transfers, bill pay, negative status codes
 - [ ] Parallel execution
