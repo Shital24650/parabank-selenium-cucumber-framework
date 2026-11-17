@@ -1,0 +1,8 @@
+# Local ParaBank, so runs don't depend on the shared public site.
+#   docker compose up -d
+#   mvn test -DbaseUrl=http://localhost:8080/parabank
+services:
+  parabank:
+    image: parasoft/parabank
+    ports:
+      - "8080:8080"
