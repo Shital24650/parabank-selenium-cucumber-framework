@@ -24,6 +24,9 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Unit tests (Mockito + WireMock, no network)
+        run: mvn -B test -Dtest="unit.*Test"
+
       - name: Wait for ParaBank to start
         run: |
           for i in $(seq 1 40); do
@@ -38,8 +41,15 @@ jobs:
           echo "ParaBank did not start"
           exit 1
 
-      - name: Run tests
-        run: mvn -B test -DbaseUrl=http://localhost:8080/parabank
+      - name: Functional tests (UI + API + E2E)
+        run: mvn -B test -Dtest=TestRunner -DbaseUrl=http://localhost:8080/parabank
+
+      - name: Test metrics summary
+        if: always()
+        run: |
+          if [ -f target/cucumber.json ]; then
+            python3 scripts/metrics.py target/cucumber.json | tee -a "$GITHUB_STEP_SUMMARY" || true
+          fi
 
       - name: Upload reports
         if: always()
@@ -48,4 +58,5 @@ jobs:
           name: test-reports
           path: |
             target/cucumber-report.html
+            target/cucumber.json
             target/karate-reports
